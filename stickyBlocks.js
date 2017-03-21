@@ -42,9 +42,12 @@
       plugin.settings = $.extend({}, defaults, options);
 
       var $blocks = $element.find(plugin.settings.blockElements);
+
+      // if there are no blocks inside the element, bail.
       if (!$blocks.length) {
         return false;
       }
+
       // code goes here
       plugin.totalBlockHeight = 0;
       plugin.totalStageHeight = 0;
@@ -53,43 +56,35 @@
       plugin.heightEl = $(plugin.settings.heightEl);
       plugin.topEl = $(plugin.settings.topTrigger);
       plugin.stuckBlock = false;
-      //var enabled = true;
-      /*if (!$element.length) {
-        return false;
-      }*/
 
       plugin.wrappers = wrapElements($blocks);
       plugin.calcBlocks();
-      //console.log('totalBlockHeight: ' + plugin.totalBlockHeight);
-
-      //console.log($blocks);
-      //console.log($wrappers);
 
       plugin.waypoint = $(plugin.settings.topTrigger).waypoint({
         handler: function(direction) {
           if (direction == 'down') {
             // start sticking
-            //console.log('Start Sticking');
             plugin.sticking = true;
-            //$el.addClass(settings.stuckClass);
           } else {
             // stop sticking
-            //console.log('Stop Sticking');
             sticking = false;
             unstick(plugin.wrappers);
-            //$el.removeClass(settings.stuckClass);
           }
         },
-        offset: plugin.settings.offset //$('#navigation').height()
+        offset: plugin.settings.offset
       });
-
-      plugin.react();
-
-      // recalc size when window size changes.
-      $(window).resize(plugin.calcBlocks);
 
       // react on scrolling
       $(window).scroll(plugin.react);
+
+      // recalc size when window size changes.
+      $(window).resize(function(){
+        plugin.calcBlocks();
+        plugin.react();
+      });
+
+      //trigger the initial reaction.
+      plugin.react();
 
 
 
