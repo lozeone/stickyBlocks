@@ -3,7 +3,7 @@
 // Sort of like the right column on facebook
 // requires waypoints.js
 // 3/18/17
-// by jpelosi
+// by lozeone
 
 
 (function($) {
@@ -16,13 +16,9 @@
       blockElements: '.block', // the elements inside this container to make sticky
       stuckClass: 'stickyBlock', // class to add to stuck elements.
       offset: 0, // offset pixels from the top of the page.
-      topTrigger: 'body', // the top of this element is the trigger
-      bottomTrigger: 'body' // the bottom of this element is the trigger
-
-      // if your plugin is event-driven, you may provide callback capabilities for its events.
-      // execute these functions before or after events of your plugin, so that users may customize
-      // those particular events without changing the plugin's code
-      // onFoo: function() {}
+      topTrigger: $(element), //'body', // the top of this element is the trigger
+      heightEl: 'body', // the element used to determine the height
+      threshold: 200 // ammount of pixels to subtract from the height element when determining stickability
     }
 
     // to avoid confusions, use "plugin" to reference the current instance of the object
@@ -51,9 +47,10 @@
       }
       // code goes here
       plugin.totalBlockHeight = 0;
+      plugin.totalStageHeight = 0;
       //var $container = $element; //$(this);
       plugin.sticking = false;
-      plugin.bottomEl = $(plugin.settings.bottomTrigger);
+      plugin.heightEl = $(plugin.settings.heightEl);
       plugin.topEl = $(plugin.settings.topTrigger);
       plugin.stuckBlock = false;
       //var enabled = true;
@@ -86,6 +83,8 @@
         offset: plugin.settings.offset //$('#navigation').height()
       });
 
+      plugin.react();
+
       $(window).scroll(plugin.react);
 
     }
@@ -98,11 +97,11 @@
     // is the element the plugin is attached to;
 
     // a public method. for demonstration purposes only - remove it!
-/*    plugin.foo_public_method = function() {
+    /*    plugin.foo_public_method = function() {
 
-      // code goes here
+          // code goes here
 
-    }*/
+        }*/
 
 
     plugin.calcBlocks = function() {
@@ -114,37 +113,41 @@
           $el.data('origWidth', $el.outerWidth());
         });
         plugin.totalBlockHeight = $element.outerHeight(true);
+        plugin.totalStageHeight = plugin.heightEl.outerHeight(true) - plugin.settings.threshold;
       }
     }
 
 
     plugin.react = function() {
 
-      if (plugin.sticking) {
-        //console.log('reacting');
-        //  if($('#content-inner').outerHeight(true) > fstop.totalSidebarHeightRight){
-        //
-        var stageHeight = plugin.bottomEl.outerHeight(true); //bottomEl.offset().top + bottomEl.outerHeight(true) - topEl.offset().top;
-        if (stageHeight > plugin.totalBlockHeight) {
-          var $vis = getVisible(availableHeight(), plugin.wrappers);
-          var scrollTop = $(window).scrollTop();
-          if ($vis) {
-            if (scrollTop > plugin.totalBlockHeight + $element.offset().top - $vis.outerHeight(true) - plugin.settings.offset - 5) {
-              //console.log('sticking', $vis);
-              if ($vis != plugin.stuckBlock) {
-                unstick($element.find('.' + plugin.settings.stuckClass).not($vis));
-                if (!$vis.hasClass(plugin.settings.stuckClass)) {
-                  stick($vis);
+      //var stageHeight = plugin.heightEl.outerHeight(true) - plugin.settings.threshold; //heightEl.offset().top + heightEl.outerHeight(true) - topEl.offset().top;
+      if (plugin.sticking && plugin.totalStageHeight > plugin.totalBlockHeight) {
+        //var stageHeight = plugin.heightEl.outerHeight(true); //heightEl.offset().top + heightEl.outerHeight(true) - topEl.offset().top;
+        //console.log(stageHeight+' > '+plugin.totalBlockHeight)
+        //if (stageHeight > plugin.totalBlockHeight) {
+        var $vis = getVisible(availableHeight(), plugin.wrappers);
+        var scrollTop = $(window).scrollTop();
+        if ($vis) {
+          if (scrollTop > plugin.totalBlockHeight + $element.offset().top - $vis.outerHeight(true) - plugin.settings.offset - 5) {
+            //console.log('sticking', $vis);
+            if ($vis != plugin.stuckBlock) {
+              unstick($element.find('.' + plugin.settings.stuckClass).not($vis));
+              if (!$vis.hasClass(plugin.settings.stuckClass)) {
+                stick($vis);
 
-                }
               }
-
-            } else {
-              unstick($element.find('.' + plugin.settings.stuckClass));
             }
+
           } else {
             unstick($element.find('.' + plugin.settings.stuckClass));
           }
+        } else {
+          unstick($element.find('.' + plugin.settings.stuckClass));
+        }
+        //}
+      } else {
+        if (plugin.stuckBlock) {
+          unstick($element.find('.' + plugin.settings.stuckClass));
         }
       }
     }
@@ -182,6 +185,7 @@
       //if (block.length) {
       block.removeClass(plugin.settings.stuckClass);
       block.removeAttr('style');
+      plugin.stuckBlock = false;
       //console.log('unsticking', block);
       //}
     }
@@ -229,11 +233,11 @@
       var scrollTop = $(window).scrollTop();
       var availHeight = Waypoint.viewportHeight() - plugin.settings.offset;
       //console.log(stickTop);
-      //var bottom = bottomEl.offset().top + bottomEl.outerHeight(true) - topEl.position().top;
+      //var bottom = heightEl.offset().top + heightEl.outerHeight(true) - topEl.position().top;
       //console.log(bottom);
-      if (plugin.bottomEl.length) {
+      if (plugin.heightEl.length) {
         //var footerPos = fstop.footer.offset().top - scrollTop - navHeight;
-        var bottomPos = plugin.bottomEl.offset().top + plugin.bottomEl.outerHeight(true) - scrollTop - plugin.settings.offset; //20; //scrollTop -
+        var bottomPos = plugin.heightEl.offset().top + plugin.heightEl.outerHeight(true) - scrollTop - plugin.settings.offset; //20; //scrollTop -
 
         if (bottomPos < availHeight) {
           availHeight = bottomPos;
