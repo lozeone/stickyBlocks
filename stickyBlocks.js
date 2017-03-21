@@ -85,7 +85,13 @@
 
       plugin.react();
 
+      // recalc size when window size changes.
+      $(window).resize(plugin.calcBlocks);
+
+      // react on scrolling
       $(window).scroll(plugin.react);
+
+
 
     }
 
