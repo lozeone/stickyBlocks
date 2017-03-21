@@ -1,4 +1,4 @@
-# sickyBlocks
+# stickyBlocks
 
 * Sticks sidebar blocks with a variable height and width to the available space within their parent container.
 * Similar to the right sidebar on facebook.
